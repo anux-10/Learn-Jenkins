@@ -5,6 +5,7 @@
   "private": true,
   "main": "src/calculator.js",
   "scripts": {
+    "build": "node scripts/build.js",
     "test": "node --test \"test/**/*.test.js\"",
     "test:ci": "node scripts/test-ci.js"
   },

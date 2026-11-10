@@ -21,6 +21,7 @@ No third-party dependencies are required: the tests use Node's built-in
 
 ```bash
 npm ci
+npm run build
 npm test
 ```
 
@@ -49,6 +50,32 @@ The pipeline will:
 4. Run a dependency audit (`npm audit --audit-level=high`).
 5. Verify the build artifact exists and run the tests (`npm run test:ci`).
 6. Publish the JUnit results to the build page.
+7. On `master`, deploy the built site to Nginx at http://localhost:8081.
+
+## Deployment (CD)
+
+The `Deploy` stage runs only on the `master` branch. It recreates the
+`learn-jenkins-site` container, copies `dist/` into it, and verifies that the
+deployed page contains "Simple Calculator".
+
+| Item | Value |
+| --- | --- |
+| Deployed URL | http://localhost:8081 |
+| Container | `learn-jenkins-site` |
+| Image | `nginx:alpine@sha256:713fc2eb…` (pinned) |
+
+Equivalent deploy commands:
+
+```bash
+docker rm -f learn-jenkins-site
+docker run -d --name learn-jenkins-site --restart unless-stopped \
+  --security-opt=no-new-privileges -p 8081:80 nginx:alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11
+docker cp dist/. learn-jenkins-site:/usr/share/nginx/html/
+docker exec learn-jenkins-site wget -qO- http://localhost/ | grep -q 'Simple Calculator'
+```
+
+The Jenkins agent needs access to the Docker daemon (the `jenkins` container
+has `/var/run/docker.sock` mounted) to run this stage.
 
 ## Security measures in the pipeline
 
@@ -66,6 +93,8 @@ The pipeline will:
   and private-key patterns. It prints only file names, never the matched value.
 - **Build limits.** A 15-minute timeout, `disableConcurrentBuilds()`, and log
   rotation limit runaway builds and retained data.
+- **Pinned deploy image.** The Nginx image is pinned by digest and runs with
+  `--security-opt=no-new-privileges`.
 
 ## Jenkins configuration recommendations
 

@@ -50,13 +50,14 @@ The pipeline will:
 4. Run a dependency audit (`npm audit --audit-level=high`).
 5. Verify the build artifact exists and run the tests (`npm run test:ci`).
 6. Publish the JUnit results to the build page.
-7. On `master`, deploy the built site to Nginx at http://localhost:8081.
+7. Deploy the built site to Nginx at http://localhost:8081.
 
 ## Deployment (CD)
 
-The `Deploy` stage runs only on the `master` branch. It recreates the
+The `Deploy` stage runs after a successful build. It recreates the
 `learn-jenkins-site` container, copies `dist/` into it, and verifies that the
-deployed page contains "Simple Calculator".
+deployed page contains "Simple Calculator". The Jenkins job is configured to
+build the `master` branch.
 
 | Item | Value |
 | --- | --- |

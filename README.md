@@ -32,6 +32,6 @@ npm run test:ci
 
 The pipeline scans for committed secrets, installs from the lockfile, builds
 and archives `dist/`, audits dependencies, runs the tests, and publishes the
-JUnit report. On `master`, it also deploys the built site to Nginx at
+JUnit report. It also deploys the built site to Nginx at
 http://localhost:8081. See `JENKINS.md` for the job setup steps, deployment
 details, and security measures.

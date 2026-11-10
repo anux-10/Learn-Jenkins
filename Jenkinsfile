@@ -91,6 +91,34 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh '''
+                    set -eu
+                    CONTAINER=learn-jenkins-site
+                    IMAGE=nginx:alpine@sha256:713fc2ebfd92e8217db451477182ee91944b123d2b1ee9fd5a8c6e91ca6c3a11
+
+                    docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
+                    docker run -d --name "$CONTAINER" --restart unless-stopped --security-opt=no-new-privileges -p 8081:80 "$IMAGE" >/dev/null
+
+                    # Wait for nginx to start.
+                    for i in $(seq 1 20); do
+                        if docker exec "$CONTAINER" wget -qO- http://localhost/ >/dev/null 2>&1; then
+                            break
+                        fi
+                        sleep 1
+                    done
+
+                    docker cp dist/. "$CONTAINER":/usr/share/nginx/html/
+                    docker exec "$CONTAINER" wget -qO- http://localhost/ | grep -q 'Simple Calculator'
+                    echo 'Deployed to http://localhost:8081'
+                '''
+            }
+        }
     }
 
     post {

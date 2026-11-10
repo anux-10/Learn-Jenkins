@@ -1,4 +1,5 @@
 node_modules/
 reports/
 dist/
+CI-CD-REPORT.html
 npm-debug.log*
